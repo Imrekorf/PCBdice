@@ -20,6 +20,7 @@
                    displayName="Important Files"
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
+      <itemPath>version.bat</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -96,7 +97,7 @@
         <property key="short-enums" value="true"/>
         <property key="tentative-definitions" value="-fno-common"/>
         <property key="undefine-macros" value=""/>
-        <property key="use-cci" value="false"/>
+        <property key="use-cci" value="true"/>
         <property key="use-iar" value="false"/>
         <property key="verbose" value="false"/>
         <property key="warning-level" value="-3"/>

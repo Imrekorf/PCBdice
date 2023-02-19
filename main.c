@@ -8,8 +8,7 @@
 
 #include <xc.h>
 #include "config_bits.h"
-
-#pragma config IDLOC0 = 1, IDLOC1 = 4, IDLOC2 = 5, IDLOC3=9
+#include "version_git.h"
 
 void main(void) {
     
@@ -21,3 +20,10 @@ void main(void) {
 }
 
 
+const char _GIT_VERSION[] __at(1020) = 
+{
+	((GIT_VERSION >> 24) & 0xFF),
+	((GIT_VERSION >> 16) & 0xFF),
+	((GIT_VERSION >>  8) & 0xFF),
+	((GIT_VERSION      ) & 0xFF),
+};
