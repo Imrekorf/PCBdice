@@ -1,5 +1,8 @@
 # .gitignore file
 
+.vscode
+version_git.h
+
 # MPLAB X IDE (Netbeans) specific
 **/*.X/~*.*
 **/*.X/build/
