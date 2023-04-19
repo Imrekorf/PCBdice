@@ -2,10 +2,12 @@
 
 .vscode
 version_git.h
+pic12f1501.h
+Documentation
 
 # MPLAB X IDE (Netbeans) specific
 **/*.X/~*.*
-**/*.X/build/
+**/*.X/build/*
 **/*.X/debug/
 **/*.X/dist/
 **/*.X/disassembly/
