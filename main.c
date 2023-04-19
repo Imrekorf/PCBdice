@@ -23,7 +23,7 @@ void ledsExecute(void);
 // Table of time driven events.
 static const struct stEVENT_INFO theEventsInfo [] = {
 	//  Slot (us)				Event handler (void)
-	{	EVENT_SLOT_MS(500),	    &ledsExecute },
+	{	EVENT_SLOT_US(500),	    &ledsExecute },
 };
 
 #define evCOUNT (sizeof(theEventsInfo) / sizeof(theEventsInfo[0]))
@@ -35,11 +35,12 @@ void main(void) {
     initClock();
     initIO();
     
-    set_led_pattern(eLED_NONE, eSIDE_NONE);
     rLAT(SIDE_EN) = 1;
     
+    leds_display(4095);
+
     for (;;) {
-       int i = 0;
+        int i = 0;
        
 		for (i = 0; i < evCOUNT; i++) {
 			if (eventExecute(&theEvents[i], theEventsInfo[i].Slot)) {
@@ -50,19 +51,6 @@ void main(void) {
     }
     
     return;
-}
-
-void ledsExecute(void) {
-    static unsigned char num = eLED_1;
-    static unsigned char side = N_PATT_SIDES-1;
-    if ( num >= N_PATT_LED) {
-        side--;
-        if (side >= N_PATT_SIDES)
-            side = N_PATT_SIDES-1;
-        num = eLED_1;
-    }
-
-    set_led_pattern(num++, 1 << (side+2));
 }
 
 inline void initIO(void) {

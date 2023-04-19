@@ -103,17 +103,25 @@ unsigned char I2C_read_byte(void) {
     return read_byte;
 }
 
-void I2C_transfer(unsigned char* write, unsigned long write_len, unsigned char* read, unsigned long read_len) {
+unsigned char I2C_transfer(unsigned char* write, unsigned char* write_len, unsigned char* read, unsigned char* read_len) {
 	_I2C_start();
-	for(int i = 0; i < write_len; i++) {
+
+    unsigned char i = 0;
+	for(; i < *write_len; i++) {
 		if (!I2C_write_byte(write[i])) {
 			// NACK received
-			// TODO: this
+			*write_len = i;
+            return 0;
 		}
 	}
-	for(int i = 0; i < read_len; i++) {
+    *write_len = i;
+
+	for(i = 0; i < *read_len; i++) {
 		read[i] = I2C_read_byte();
 		_I2C_start(); // repeated start
 	}
+    *read_len = i;
+
 	_I2C_stop();
+    return 1;
 }

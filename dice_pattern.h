@@ -22,14 +22,17 @@ extern "C" {
     
 typedef enum {
     eSIDE_NONE = 0,
-    eSIDE_A = 1 << 2, // works!
-    eSIDE_B = 1 << 3, // works!
-    eSIDE_C = 1 << 4, // works!
-    eSIDE_D = 1 << 5, // works!
-    eSIDE_E = 1 << 6, // untested
-    eSIDE_F = 1 << 7, // works!
+    eSIDE_A = 0, // works!
+    eSIDE_B = 1, // works!
+    eSIDE_C = 2, // works!
+    eSIDE_D = 3, // works!
+    eSIDE_E = 4, // untested
+    eSIDE_F = 5, // works!
     N_PATT_SIDES = 6,
 } eSIDE_t;
+
+// add +1 to x for i2c offset (LSB is send first)
+#define PATT_SIDE(x)     (1 << (x+2))
 
 /**
  * E2      A6
@@ -62,10 +65,12 @@ typedef enum {
     eLED_4,
     eLED_5,
     eLED_6,
+    eLED_7,
     N_PATT_LED,
 } ePATT_t;
 
-void set_led_pattern(ePATT_t pattern, eSIDE_t side) ;
+void ledsExecute(void);
+void leds_display(unsigned short val);
 
 #ifdef	__cplusplus
 }
