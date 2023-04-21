@@ -15,7 +15,8 @@ extern "C" {
 #define I2C_READ_BIT  1
 #define I2C_WRITE_BIT 0
 
-unsigned char I2C_transfer(unsigned char* write, unsigned char write_len, unsigned char* read, unsigned char read_len);
+unsigned char I2C_write(unsigned char* write, unsigned char write_len, unsigned char repeated_start);
+void I2C_read(unsigned char* read, unsigned char read_len);
 void I2C_write_byte(unsigned char b);
 unsigned char I2C_read_byte(void);
 

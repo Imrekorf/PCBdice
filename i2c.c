@@ -49,7 +49,7 @@ static unsigned char _I2C_read_bit(void);
 
 // TODO: double sample input ?
 	
-#define I2C_ACTION_DELAY()		//__I2C_ACTION_DELAY(6)
+#define I2C_ACTION_DELAY()		__I2C_ACTION_DELAY(6)
 /**
  * @brief Functions should always return the SCL state back to low after function execution, except for the I2C.stop() function
  */
@@ -110,7 +110,6 @@ static void _I2C_stop(void) {
  * - SCL: low
  */
 static void _I2C_write_bit(unsigned char bit) {
-	I2C_ACTION_DELAY();			// allow bus to settle
 	rLAT(SDA) = bit; 		    // change data
 	rLAT(SCL) = eHIGH; 		    // pull clock high
 	I2C_ACTION_DELAY();			// allow slave to read bit
@@ -140,8 +139,11 @@ static unsigned char _I2C_read_bit(void) {
 }
 
 void I2C_write_byte(unsigned char b) {
-	for (signed char i = 7; i >= 0; i--)
+    I2C_ACTION_DELAY();             // allow bus to settle before sending byte
+	for (signed char i = 7; i >= 0; i--) {
 		_I2C_write_bit((b >> i) & 1);
+        I2C_ACTION_DELAY();			// allow bus to settle
+    }
 }
 
 unsigned char I2C_read_byte(void) {
@@ -149,15 +151,13 @@ unsigned char I2C_read_byte(void) {
 	// make sure SDA is not analog on init
 	for (signed char i = 7; i >= 0; i--)
 		read_byte |= _I2C_read_bit() << i; 	// read data
-	_I2C_write_bit(0); 		// Send ACK
     return read_byte;
 }
 
-unsigned char I2C_transfer(unsigned char* write, unsigned char write_len, unsigned char* read, unsigned char read_len) {
+unsigned char I2C_write(unsigned char* write, unsigned char write_len, unsigned char repeated_start) {
 	_I2C_start();
-
-    unsigned char i = 0;
-	for(; i < write_len; i++) {
+    
+	for(unsigned char i = 0; i < write_len; i++) {
         I2C_write_byte(write[i]);
 		if (_I2C_read_bit()) { // read (n)ack
 			// NACK received
@@ -165,12 +165,18 @@ unsigned char I2C_transfer(unsigned char* write, unsigned char write_len, unsign
             return 0;
 		}
 	}
+    
+    if (!repeated_start)
+        _I2C_stop();
 
-	for(i = 0; i < read_len; i++) {
+    return 1;
+}
+
+void I2C_read(unsigned char* read, unsigned char read_len) {
+    for(unsigned char i = 0; i < read_len; i++) {
 		read[i] = I2C_read_byte();
-		_I2C_start(); // repeated start
-	}
-
-	_I2C_stop();
-    return read_len;
+        _I2C_write_bit(i+1 >= read_len); // Send ACK
+    }
+    
+    _I2C_stop();
 }

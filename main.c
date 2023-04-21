@@ -20,14 +20,27 @@
 inline void initIO(void);
 inline void initClock(void);
 
+void i2cExecute(void);
+
 // Table of time driven events.
 static event_info_t event_info [] = {
 	//  Slot (us)				Event handler (void)
 	{	0, EVENT_INTERVAL_US(1000),	&ledsExecute },
-    {   0, EVENT_INTERVAL_US(100000), &i2cExecute },
+    {   0, EVENT_INTERVAL_US(125000), &i2cExecute },
 };
 
 #define EVENT_COUNT (sizeof(event_info)/sizeof(event_info[0]))
+
+void i2cExecute(void) {
+    unsigned char i2c_msg[2] = {MMA_DEVICE_ADDR | I2C_WRITE_BIT, MMA_PL_BF_ZCOMP};
+    if (I2C_write(i2c_msg, 2, 1)) {
+        i2c_msg[0] |= MMA_DEVICE_ADDR | I2C_READ_BIT;
+        if(I2C_write(i2c_msg, 1, 1)) {
+            I2C_read(i2c_msg, 2);
+            leds_display(i2c_msg[0]);
+        }
+    }
+}
 
 void main(void) {
     
