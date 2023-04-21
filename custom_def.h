@@ -16,7 +16,7 @@ extern "C" {
 #define str(s) #s
 
 
-#define CPU_SPEED 1000000
+#define CPU_SPEED 4000000
     
 #define __rBIT(Type, Port, Nr)  Type##Port##bits.Type##Port##Nr
 #define __rBITPORT(Type, Port, Nr)  Type##Port##bits.R##Port##Nr
@@ -24,7 +24,7 @@ extern "C" {
 #define rPORT(Def)              __rBITPORT(PORT, Def)
 #define rLAT(Def)               __rBIT(LAT, Def)
 #define rANSEL(Def)             __rBIT(ANSEL, Def)
-    
+
 #define SCL                 A, 2
 #define SDA                 A, 4
     
@@ -33,6 +33,9 @@ extern "C" {
 #define PATT_STR            A, 5
 
 #define MMA_INT             A, 3
+
+#define __PIN_DEF_BIT(Port, Nr) (Nr)
+#define PIN_DEF_BIT(Def)    __PIN_DEF_BIT(Def)
 
 enum {
     eHIGH = 1,

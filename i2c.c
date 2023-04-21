@@ -48,80 +48,129 @@ static void _I2C_write_bit(unsigned char bit);
 static unsigned char _I2C_read_bit(void);
 
 // TODO: double sample input ?
+	
+#define I2C_ACTION_DELAY()		//__I2C_ACTION_DELAY(6)
+/**
+ * @brief Functions should always return the SCL state back to low after function execution, except for the I2C.stop() function
+ */
 
+void __I2C_ACTION_DELAY(signed char x) {
+    for(char _nop_i = 0; _nop_i < (x); _nop_i++) { __nop(); }
+}
+
+/**
+ * @brief Start's I2C communication
+ * Start I2C state:
+ * - SCL: don't care
+ * - SDA: don't care
+ * End I2C state:
+ * - SCL: low
+ * - SDA: low
+ */
 static void _I2C_start(void) {
 	// START entry conditions:
-	// After ACK assume ( SDA = 0, SCL = 0 )
+	// After ACK assume ( SDA = x, SCL = 0 )
 	// After Stop/Init  ( SDA = 1, SCL = 1 )
-	rLAT(SDA) = eHIGH; 		// make sure SDA is high
-	rLAT(SCL) = eHIGH; 		// make sure SCL is high
+	rLAT(SDA) = eHIGH;		// if ACK was previous action, first set SDA line high while SCL is still low
+	rLAT(SCL) = eHIGH;		// if ack was previous action, set SCL high
+	__I2C_ACTION_DELAY(2);	// allow bus to settle
 	rLAT(SDA) = eLOW; 	    // actual H->L START condition
+	__I2C_ACTION_DELAY(3);	// allow bus to settle
 	rLAT(SCL) = eLOW; 		// end clock cycle
 }
 
+/**
+ * @brief Stop's I2C communication
+ * Start I2C state:
+ * - SCL: low
+ * - SDA: don't care
+ * 
+ * End I2C state:
+ * - SCL: high
+ * - SDA: high
+ */
 static void _I2C_stop(void) {
-	rLAT(SCL) = eLOW; 		// make sure SCL is low
 	rLAT(SDA) = eLOW; 		// make sure SDA is low
 	rLAT(SCL) = eHIGH; 		// make clock high for STOP condition
+	__I2C_ACTION_DELAY(2);	// allow bus to settle
 	rLAT(SDA) = eHIGH; 		// actual L->H STOP condition
 	// don't end clock cycle
 }
 
+/**
+ * @brief Write 1 bit over I2C bus
+ * @param bit the value to write on the I2C bus
+ * 
+ * Start I2C state:
+ * - SDA: don't care
+ * - SCL: low
+ * 
+ * End I2C state:
+ * - SDA: bit
+ * - SCL: low
+ */
 static void _I2C_write_bit(unsigned char bit) {
-	rLAT(SCL) = eLOW; 			// make sure SCL is low
+	I2C_ACTION_DELAY();			// allow bus to settle
 	rLAT(SDA) = bit; 		    // change data
 	rLAT(SCL) = eHIGH; 		    // pull clock high
+	I2C_ACTION_DELAY();			// allow slave to read bit
+	rLAT(SCL) = eLOW; 			// make sure SCL is low
 }
 
+/**
+ * @brief Read 1 bit over I2C bus
+ * @return the bit read on the I2C bus
+ * 
+ * Start I2C state:
+ * - SDA: don't care
+ * - SCL: low
+ * 
+ * End I2C state:
+ * - SDA: bit
+ * - SCL: low
+ */
 static unsigned char _I2C_read_bit(void) {
-	// make sure SDA is not analog on init
 	rTRIS(SDA) = eINPUT; 		// release data line
-	rLAT(SCL)  = eHIGH;			// make slave load data on bus
+	rTRIS(SCL) = eINPUT;		// make slave load data on bus (allow clock stretching), pulled high
+	I2C_ACTION_DELAY();			// allow device to send bit
 	unsigned char val = rPORT(SDA); 	// read data
-	rLAT(SCL)  = eLOW; 			// end clock cycle
+	rTRIS(SCL) = eOUTPUT; 		// end clock cycle, set back to low
 	rTRIS(SDA) = eOUTPUT;		// reclaim data line
     return val;
 }
 
-unsigned char I2C_write_byte(unsigned char b) {
-	for (unsigned char i = 0; i < 8; i++)
+void I2C_write_byte(unsigned char b) {
+	for (signed char i = 7; i >= 0; i--)
 		_I2C_write_bit((b >> i) & 1);
-	return !_I2C_read_bit(); // read ack
 }
 
 unsigned char I2C_read_byte(void) {
 	unsigned char read_byte = 0;
 	// make sure SDA is not analog on init
-	rTRIS(SDA) = eINPUT; 		// release data line
-	for (int i = 0; i < 8; i++) {
-		rLAT(SCL) = eHIGH;			// make slave load data on bus
-		read_byte |= rPORT(SDA) << i; 	// read data
-		rLAT(SCL) = eLOW; 			// end clock cycle
-	}
-	rTRIS(SDA) = eOUTPUT;		// claim data line
+	for (signed char i = 7; i >= 0; i--)
+		read_byte |= _I2C_read_bit() << i; 	// read data
 	_I2C_write_bit(0); 		// Send ACK
     return read_byte;
 }
 
-unsigned char I2C_transfer(unsigned char* write, unsigned char* write_len, unsigned char* read, unsigned char* read_len) {
+unsigned char I2C_transfer(unsigned char* write, unsigned char write_len, unsigned char* read, unsigned char read_len) {
 	_I2C_start();
 
     unsigned char i = 0;
-	for(; i < *write_len; i++) {
-		if (!I2C_write_byte(write[i])) {
+	for(; i < write_len; i++) {
+        I2C_write_byte(write[i]);
+		if (_I2C_read_bit()) { // read (n)ack
 			// NACK received
-			*write_len = i;
+			_I2C_stop();
             return 0;
 		}
 	}
-    *write_len = i;
 
-	for(i = 0; i < *read_len; i++) {
+	for(i = 0; i < read_len; i++) {
 		read[i] = I2C_read_byte();
 		_I2C_start(); // repeated start
 	}
-    *read_len = i;
 
 	_I2C_stop();
-    return 1;
+    return read_len;
 }

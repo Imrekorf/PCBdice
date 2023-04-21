@@ -15,39 +15,29 @@
 #include "i2c.h"
 #include "dice_pattern.h"
 
+#include "MMA8652FC.h"
+
 inline void initIO(void);
 inline void initClock(void);
 
-void ledsExecute(void);
-
 // Table of time driven events.
-static const struct stEVENT_INFO theEventsInfo [] = {
+static event_info_t event_info [] = {
 	//  Slot (us)				Event handler (void)
-	{	EVENT_SLOT_US(500),	    &ledsExecute },
+	{	0, EVENT_INTERVAL_US(1000),	&ledsExecute },
+    {   0, EVENT_INTERVAL_US(100000), &i2cExecute },
 };
 
-#define evCOUNT (sizeof(theEventsInfo) / sizeof(theEventsInfo[0]))
-
-static unsigned short theEvents [evCOUNT];
+#define EVENT_COUNT (sizeof(event_info)/sizeof(event_info[0]))
 
 void main(void) {
     
     initClock();
     initIO();
     
-    rLAT(SIDE_EN) = 1;
-    
-    leds_display(4095);
+    leds_display(02345);
 
     for (;;) {
-        int i = 0;
-       
-		for (i = 0; i < evCOUNT; i++) {
-			if (eventExecute(&theEvents[i], theEventsInfo[i].Slot)) {
-				theEventsInfo[i].Handler();
-				break;
-			}
-		}
+        eventExecute(event_info, EVENT_COUNT);
     }
     
     return;
@@ -56,19 +46,24 @@ void main(void) {
 inline void initIO(void) {
     ANSELA      = 0; // set all IO to digital
     
-    LATA        = eLOW; // set pin values by default low
-    rLAT(SCL)   = eHIGH; // make SCL high per I2C specifications
-    rLAT(SDA)   = eHIGH; // make SDA high per I2C specifications
+    // load default pin states
+    LATA        = 0
+                    | 1 << PIN_DEF_BIT(SDA)
+                    | 1 << PIN_DEF_BIT(SCL);
     
     TRISA       = 0; // init all bits as output, RA3 will be input as it is non-writable
 }
 
 inline void initClock(void) {
-    OSCCONbits.IRCF = 0xB;   // 1MHz clock
+    OSCCONbits.IRCF = 0xD;   // 4MHz clock
     OSCCONbits.SCS = 0;      // Clock determined by FOSC<1:0> in configuration words (INTOSC)
     
-    // setup timer 1 to keep track of time
-    T1CONbits.TMR1CS = 0; // use FOSC/4
-    T1CONbits.T1CKPS = 3; // 1:8 prescaler
-    T1CONbits.TMR1ON = 1;  // enable timer 1    
+    T2CONbits.T2CKPS    = 0; // use FOSC/4 1:1
+    T2CONbits.T2OUTPS   = 0; // no post scaler
+    PR2 = (EVENT_TIME_UNIT / ((CPU_SPEED / 4) / 1000000)) - 1;
+    // enable interrupt
+    PIE1bits.TMR2IE     = 1;
+    INTCONbits.PEIE     = 1;
+    INTCONbits.GIE      = 1;
+    T2CONbits.TMR2ON    = 1;
 }

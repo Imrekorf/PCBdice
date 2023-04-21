@@ -14,27 +14,18 @@ extern "C" {
     
 #include "custom_def.h"
 
-#define TIMER_SPEED CPU_SPEED
-
-#define PRESCALER 8
-
-#define MS_PER_TICK  ((4*PRESCALER) / (TIMER_SPEED / 1000000))
-#define TICKS_PER_MS ((TIMER_SPEED / 1000000) / (4*PRESCALER))
-
-#if MS_PER_TICK
-#   define EVENT_SLOT_MS(x) ((x * 1000UL) / MS_PER_TICK)
-#   define EVENT_SLOT_US(x) (x / MS_PER_TICK)
-#else
-#   define EVENT_SLOT_MS(x) ((x * 1000) * TICKS_PER_MS)
-#   define EVENT_SLOT_US(x) (x * TICKS_PER_MS)
-#endif
+#define EVENT_TIME_UNIT 100 // us
     
-struct stEVENT_INFO {
-    unsigned short Slot;
-    void (*Handler)(void);
-};
+#define EVENT_INTERVAL_MS(x) ((x * 1000) / EVENT_TIME_UNIT)
+#define EVENT_INTERVAL_US(x) (x / EVENT_TIME_UNIT)
 
-unsigned char eventExecute (unsigned short* event, unsigned short eventtime);
+typedef struct {
+    unsigned short EventTimer;
+    const unsigned short EventInterval;
+    void (* const Handler)(void);
+} event_info_t;
+
+extern void eventExecute (event_info_t* event_info, char event_count);
 
 #ifdef	__cplusplus
 }
