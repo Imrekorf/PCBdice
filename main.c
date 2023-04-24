@@ -25,21 +25,23 @@ void i2cExecute(void);
 // Table of time driven events.
 static event_info_t event_info [] = {
 	//  Slot (us)				Event handler (void)
-	{	0, EVENT_INTERVAL_US(1000),	&ledsExecute },
+//	{	0, EVENT_INTERVAL_US(1000),	&ledsExecute },
     {   0, EVENT_INTERVAL_US(125000), &i2cExecute },
 };
 
 #define EVENT_COUNT (sizeof(event_info)/sizeof(event_info[0]))
 
 void i2cExecute(void) {
-    unsigned char i2c_msg[2] = {MMA_DEVICE_ADDR | I2C_WRITE_BIT, MMA_PL_BF_ZCOMP};
-    if (I2C_write(i2c_msg, 2, 1)) {
-        i2c_msg[0] |= MMA_DEVICE_ADDR | I2C_READ_BIT;
-        if(I2C_write(i2c_msg, 1, 1)) {
-            I2C_read(i2c_msg, 2);
-            leds_display(i2c_msg[0]);
-        }
-    }
+//    unsigned char i2c_msg[2] = {MMA_DEVICE_ADDR | I2C_WRITE_BIT, MMA_WHO_AM_I};
+//    if (I2C_write(i2c_msg, 2, 1)) {
+//        i2c_msg[0] |= MMA_DEVICE_ADDR | I2C_READ_BIT;
+//        if(I2C_write(i2c_msg, 1, 1)) {
+//            I2C_read(i2c_msg, 2);
+//            leds_display(i2c_msg[0]);
+//        }
+//    }
+    
+    I2C_write(MMA_DEVICE_ADDR | I2C_WRITE_BIT);
 }
 
 void main(void) {
@@ -61,8 +63,8 @@ inline void initIO(void) {
     
     // load default pin states
     LATA        = 0
-                    | 1 << PIN_DEF_BIT(SDA)
-                    | 1 << PIN_DEF_BIT(SCL);
+                    | 1 << _SDA
+                    | 1 << _SCL;
     
     TRISA       = 0; // init all bits as output, RA3 will be input as it is non-writable
 }

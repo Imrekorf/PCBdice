@@ -17,27 +17,26 @@ const unsigned char pattern_LED[N_PATT_LEDS] = {
 };
 
 static inline void _set_led_pattern(ePATT_t pattern, eSIDE_t side) {
-    rLAT(SIDE_EN)  = 0;
+    rLAT(pSIDE_EN)  = 0;
     // set pattern
-    rLAT(PATT_STR) = 1;
-    I2C_write_byte(pattern_LED[pattern]);
+    rLAT(pPATT_STR) = 1;
     unsigned char b = pattern_LED[pattern];
     for (signed char i = 7; i >= 0; i--) {
-        rLAT(SDA) = (b >> i) & 1; 		// change data
-        rLAT(SCL) = eHIGH; 		    // pull clock high
-        rLAT(SCL) = eLOW; 			// make sure SCL is low
+        rLAT(pSDA) = (b >> i) & 1; 		// change data
+        rLAT(pSCL) = eHIGH; 		    // pull clock high
+        rLAT(pSCL) = eLOW; 			// make sure SCL is low
     }
-    rLAT(PATT_STR) = 0;
+    rLAT(pPATT_STR) = 0;
     // set side
-    rLAT(SIDE_STR) = 1;
+    rLAT(pSIDE_STR) = 1;
     for (signed char i = 7; i >= 0; i--) {
-        rLAT(SDA) = (side >> i);    // change data
-        rLAT(SCL) = eHIGH; 		    // pull clock high
-        rLAT(SCL) = eLOW; 			// make sure SCL is low
+        rLAT(pSDA) = (side >> i);    // change data
+        rLAT(pSCL) = eHIGH; 		    // pull clock high
+        rLAT(pSCL) = eLOW; 			// make sure SCL is low
     }
-    rLAT(SIDE_STR) = 0;
+    rLAT(pSIDE_STR) = 0;
     
-    rLAT(SIDE_EN)  = 1;
+    rLAT(pSIDE_EN)  = 1;
 }
 
 static ePATT_t _display[N_PATT_SIDES] = {0};
