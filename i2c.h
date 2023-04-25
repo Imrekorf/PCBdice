@@ -12,17 +12,26 @@
 extern "C" {
 #endif
 
-#define I2C_READ_BIT  1
-#define I2C_WRITE_BIT 0
+#define I2C_READ_BIT    1
+#define I2C_WRITE_BIT   0
+    
+#define I2C_ACK         0
+#define I2C_NACK        1
 
 //unsigned char I2C_write(unsigned char* write, unsigned char write_len, unsigned char repeated_start);
 //void I2C_read(unsigned char* read, unsigned char read_len);
 //void I2C_write_byte(unsigned char b);
 //unsigned char I2C_read_byte(void);
 
-extern void I2C_write(unsigned char byte);
-extern unsigned char I2C_read(void);
+extern void i2c_start(void);
+extern void i2c_stop(void);
     
+extern void i2c_write(unsigned char b);
+extern unsigned char i2c_read(void);
+
+extern unsigned char i2c_read_bit(void);
+extern void i2c_write_bit(unsigned char b);
+
 #ifdef	__cplusplus
 }
 #endif
