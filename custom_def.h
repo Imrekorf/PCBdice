@@ -11,10 +11,9 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-
+    
 #define xstr(s) str(s)
 #define str(s) #s
-
 
 #define CPU_SPEED 4000000
     
@@ -25,17 +24,17 @@ extern "C" {
 #define rLAT(Def)               __rBIT(LAT, Def)
 #define rANSEL(Def)             __rBIT(ANSEL, Def)
 
-#define SCL                 A, 2
-#define SDA                 A, 4
+#define _SCL                2
+#define _SDA                4
     
-#define SIDE_EN             A, 0
-#define SIDE_STR            A, 1
-#define PATT_STR            A, 5
+#define pSCL                 A, _SCL
+#define pSDA                 A, _SDA
+    
+#define pSIDE_EN             A, 0
+#define pSIDE_STR            A, 1
+#define pPATT_STR            A, 5
 
-#define MMA_INT             A, 3
-
-#define __PIN_DEF_BIT(Port, Nr) (Nr)
-#define PIN_DEF_BIT(Def)    __PIN_DEF_BIT(Def)
+#define pMMA_INT             A, 3
 
 enum {
     eHIGH = 1,
@@ -50,6 +49,37 @@ enum {
     eOUTPUT  = 0,
     eINPUT   = 1,
 };
+
+typedef enum {
+    eSUCCESS = 0,
+    eFAILURE = 1,
+} glbl_err_t;
+
+#if CPU_SPEED == 16000000
+#define OSCCON_IRCF 0xF
+#elif CPU_SPEED == 8000000
+#define OSCCON_IRCF 0xE
+#elif CPU_SPEED == 4000000
+#define OSCCON_IRCF 0xD
+#elif CPU_SPEED == 2000000
+#define OSCCON_IRCF 0xC
+#elif CPU_SPEED == 1000000
+#define OSCCON_IRCF 0xB
+#elif CPU_SPEED ==  500000
+#define OSCCON_IRCF 0xA
+#elif CPU_SPEED ==  250000
+#define OSCCON_IRCF 0x9
+#elif CPU_SPEED ==  125000
+#define OSCCON_IRCF 0x5
+#elif CPU_SPEED ==   62500
+#define OSCCON_IRCF 0x4
+#elif CPU_SPEED ==   31250
+#define OSCCON_IRCF 0x2
+#elif CPU_SPEED ==   31000
+#define OSCCON_IRCF 0x0
+#else
+#error INVALID CPU_SPEED SPECIFIED 
+#endif
 
 #ifdef	__cplusplus
 }

@@ -26,20 +26,39 @@ void i2cExecute(void);
 static event_info_t event_info [] = {
 	//  Slot (us)				Event handler (void)
 	{	0, EVENT_INTERVAL_US(1000),	&ledsExecute },
-    {   0, EVENT_INTERVAL_US(125000), &i2cExecute },
+    {   0, EVENT_INTERVAL_US(10000), &i2cExecute },
 };
 
 #define EVENT_COUNT (sizeof(event_info)/sizeof(event_info[0]))
 
 void i2cExecute(void) {
-    unsigned char i2c_msg[2] = {MMA_DEVICE_ADDR | I2C_WRITE_BIT, MMA_PL_BF_ZCOMP};
-    if (I2C_write(i2c_msg, 2, 1)) {
-        i2c_msg[0] |= MMA_DEVICE_ADDR | I2C_READ_BIT;
-        if(I2C_write(i2c_msg, 1, 1)) {
-            I2C_read(i2c_msg, 2);
-            leds_display(i2c_msg[0]);
-        }
-    }
+    union {
+        signed char buff[3];
+        struct {
+            signed char x;
+            signed char y;
+            signed char z;
+        } g;
+    } data;
+    comm_MMA_read(MMA_OUT_X_MSB, (unsigned char*)&data.buff, 3);
+    
+    static eSIDE_t side = eSIDE_D;
+    leds_display(side, 0);
+    
+    if ( data.g.x <= -MMA_TRIP_mG_BIN )
+        side = eSIDE_E;
+    if ( data.g.x >=  MMA_TRIP_mG_BIN )
+        side = eSIDE_A;
+    if ( data.g.y <= -MMA_TRIP_mG_BIN )
+        side = eSIDE_B;
+    if ( data.g.y >=  MMA_TRIP_mG_BIN )
+        side = eSIDE_F;
+    if ( data.g.z <= -MMA_TRIP_mG_BIN )
+        side = eSIDE_D;
+    if ( data.g.z >=  MMA_TRIP_mG_BIN )
+        side = eSIDE_C;
+    
+    leds_display(side, 7);
 }
 
 void main(void) {
@@ -47,8 +66,11 @@ void main(void) {
     initClock();
     initIO();
     
-    leds_display(02345);
-
+//    writeMMA(MMA_XYZ_DATA_CFG, 0b01);
+    comm_MMA_start(MMA_CTRL_REG1);
+    comm_MMA_write_byte(0b11100011);
+    comm_MMA_stop();
+    
     for (;;) {
         eventExecute(event_info, EVENT_COUNT);
     }
@@ -61,14 +83,14 @@ inline void initIO(void) {
     
     // load default pin states
     LATA        = 0
-                    | 1 << PIN_DEF_BIT(SDA)
-                    | 1 << PIN_DEF_BIT(SCL);
+                    | 1 << _SDA
+                    | 1 << _SCL;
     
     TRISA       = 0; // init all bits as output, RA3 will be input as it is non-writable
 }
 
 inline void initClock(void) {
-    OSCCONbits.IRCF = 0xD;   // 4MHz clock
+    OSCCONbits.IRCF = OSCCON_IRCF;
     OSCCONbits.SCS = 0;      // Clock determined by FOSC<1:0> in configuration words (INTOSC)
     
     T2CONbits.T2CKPS    = 0; // use FOSC/4 1:1

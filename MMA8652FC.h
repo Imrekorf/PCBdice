@@ -12,8 +12,15 @@
 extern "C" {
 #endif
 
-#define MMA_DEVICE_ADDR 0x3A
+#include "custom_def.h"
+    
+#define MMA_DEVICE_ADDR         0x3A
 
+#define MMA_G_SCALE             (2)
+#define MMA_TRIP_mG             (850L)
+#define MMA_TRIP_mG_BIN         (MMA_mG_TO_BIN(MMA_TRIP_mG))
+#define MMA_mG_TO_BIN(x)        ((x / MMA_G_SCALE * 127) / 1000)
+    
 typedef enum {
     MMA_STATUS      		= 0x00,
     MMA_F_STATUS    		= 0x00,
@@ -63,6 +70,14 @@ typedef enum {
 	MMA_OFF_Y				= 0x30,
 	MMA_OFF_Z				= 0x31,
 } mma_reg_t;
+
+glbl_err_t comm_MMA_start(mma_reg_t addr);
+void comm_MMA_stop(void);
+
+#define comm_MMA_write_byte(byte) i2c_write(byte), i2c_read_bit();
+
+glbl_err_t comm_MMA_read(mma_reg_t addr, unsigned char* buff, unsigned char buff_len);
+glbl_err_t comm_MMA_write(mma_reg_t addr, unsigned char* buff, unsigned char buff_len);
 
 #ifdef	__cplusplus
 }
