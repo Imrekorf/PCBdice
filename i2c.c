@@ -150,9 +150,8 @@ unsigned char i2c_read_bit(void) {
 	asm("NOP");
 	asm("MOVF	 PORTA, w");	// read data
 	asm("ANDLW	 " xstr(1 << _SDA)); // mask SDA bit
-	asm("MOVLW	 0x0");
-	asm("BTFSC   STATUS, " xstr(_STATUS_Z_POSN));
-	asm("ADDLW   0x1");
+	asm("BTFSS   STATUS, " xstr(_STATUS_Z_POSN));
+    asm("MOVLW   0x1");
 	asm("BANKSEL (TRISA)");
 	asm("BCF	  " xstr(BANKMASK(TRISA)) ", " xstr(_SCL));	// reclaim clock line
 	asm("BCF	  " xstr(BANKMASK(TRISA)) ", " xstr(_SDA));	// reclaim data line	

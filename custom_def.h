@@ -50,6 +50,37 @@ enum {
     eINPUT   = 1,
 };
 
+typedef enum {
+    eSUCCESS = 0,
+    eFAILURE = 1,
+} glbl_err_t;
+
+#if CPU_SPEED == 16000000
+#define OSCCON_IRCF 0xF
+#elif CPU_SPEED == 8000000
+#define OSCCON_IRCF 0xE
+#elif CPU_SPEED == 4000000
+#define OSCCON_IRCF 0xD
+#elif CPU_SPEED == 2000000
+#define OSCCON_IRCF 0xC
+#elif CPU_SPEED == 1000000
+#define OSCCON_IRCF 0xB
+#elif CPU_SPEED ==  500000
+#define OSCCON_IRCF 0xA
+#elif CPU_SPEED ==  250000
+#define OSCCON_IRCF 0x9
+#elif CPU_SPEED ==  125000
+#define OSCCON_IRCF 0x5
+#elif CPU_SPEED ==   62500
+#define OSCCON_IRCF 0x4
+#elif CPU_SPEED ==   31250
+#define OSCCON_IRCF 0x2
+#elif CPU_SPEED ==   31000
+#define OSCCON_IRCF 0x0
+#else
+#error INVALID CPU_SPEED SPECIFIED 
+#endif
+
 #ifdef	__cplusplus
 }
 #endif

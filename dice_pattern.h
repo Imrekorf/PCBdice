@@ -71,7 +71,9 @@ typedef enum {
 } ePATT_t;
 
 void ledsExecute(void);
-void leds_display(unsigned short val);
+void leds_display(eSIDE_t side, ePATT_t pattern);
+void leds_display_dbg(unsigned short val);
+void leds_display_dbg_signed(signed char val);
 
 #ifdef	__cplusplus
 }

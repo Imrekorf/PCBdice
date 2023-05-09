@@ -49,7 +49,11 @@ void ledsExecute(void) {
     i++;
 }
 
-void leds_display(unsigned short val) {
+void leds_display(eSIDE_t side, ePATT_t pattern) {
+    _display[side] = pattern;
+}
+
+void leds_display_dbg(unsigned short val) {
     // can display values < 4095
     _display[eSIDE_A] = val & 7;
     val >>= 3;
@@ -58,4 +62,18 @@ void leds_display(unsigned short val) {
     _display[eSIDE_D] = val & 7;
     val >>= 3;
     _display[eSIDE_F] = val & 7;
+}
+
+void leds_display_dbg_signed(signed char val) {
+    _display[eSIDE_F] = 0;
+    if (val < 0) {
+        _display[eSIDE_F] = 1;
+        val = ~val + 1;
+    }
+    _display[eSIDE_A] = val & 7;
+    val >>= 3;
+    _display[eSIDE_C] = val & 7;
+    val >>= 3;
+    _display[eSIDE_D] = val & 7;
+    val >>= 3;
 }
