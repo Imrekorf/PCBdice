@@ -3,8 +3,6 @@
 #include "custom_def.h"
 #include "i2c.h"
 
-static inline void _set_led_pattern(ePATT_t pattern, eSIDE_t side) ;
-
 const unsigned char pattern_LED[N_PATT_LEDS] = {
     /* 0b 0000000 */ [eLED_NONE] = eLED_NONE,
     /* 0b 0001000 */ [eLED_PATT_1] = (PATT_LED(eLED_D)), 
@@ -16,43 +14,42 @@ const unsigned char pattern_LED[N_PATT_LEDS] = {
     /* 0b 1111111 */ [eLED_PATT_7] = (PATT_LED(eLED_G) | PATT_LED(eLED_F) | PATT_LED(eLED_E) | PATT_LED(eLED_D) | PATT_LED(eLED_C) | PATT_LED(eLED_B) | PATT_LED(eLED_A)),
 };
 
-static inline void _set_led_pattern(ePATT_t pattern, eSIDE_t side) {
+#ifdef _DEBUG
+ePATT_t _display[N_PATT_SIDES] = {0};
+#endif
+
+void ledsExecute(void) {
+#ifdef _DEBUG
+    if (DICE_LED_EXEC_SIDE_I >= N_PATT_SIDES)
+        DICE_LED_EXEC_SIDE_I = 0;
+#endif
+    
     rLAT(pSIDE_EN)  = 0;
     // set pattern
     rLAT(pPATT_STR) = 1;
-    unsigned char b = pattern_LED[pattern];
-    for (signed char i = 7; i >= 0; i--) {
-        rLAT(pSDA) = (b >> i) & 1; 		// change data
-        rLAT(pSCL) = eHIGH; 		    // pull clock high
-        rLAT(pSCL) = eLOW; 			// make sure SCL is low
-    }
+#ifdef _DEBUG
+    i2c_write(pattern_LED[_display[DICE_LED_EXEC_SIDE_I]]);
+#else
+    i2c_write(pattern_LED[LED_DISPLAY_PATT]);
+#endif
     rLAT(pPATT_STR) = 0;
     // set side
     rLAT(pSIDE_STR) = 1;
-    for (signed char i = 7; i >= 0; i--) {
-        rLAT(pSDA) = (side >> i);    // change data
-        rLAT(pSCL) = eHIGH; 		    // pull clock high
-        rLAT(pSCL) = eLOW; 			// make sure SCL is low
-    }
+#ifdef _DEBUG
+    i2c_write((unsigned char)PATT_SIDE(DICE_LED_EXEC_SIDE_I));
+#else
+    i2c_write((unsigned char)PATT_SIDE(LED_DISPLAY_SIDE));
+#endif
     rLAT(pSIDE_STR) = 0;
     
     rLAT(pSIDE_EN)  = 1;
+    
+#ifdef _DEBUG
+    DICE_LED_EXEC_SIDE_I++;
+#endif
 }
 
-static ePATT_t _display[N_PATT_SIDES] = {0};
-
-void ledsExecute(void) {
-    static unsigned char i = 0;
-    if (i >= N_PATT_SIDES)
-        i = 0;
-    _set_led_pattern(_display[i], PATT_SIDE(i));
-    i++;
-}
-
-void leds_display(eSIDE_t side, ePATT_t pattern) {
-    _display[side] = pattern;
-}
-
+#ifdef _DEBUG
 void leds_display_dbg(unsigned short val) {
     // can display values < 4095
     _display[eSIDE_A] = val & 7;
@@ -77,3 +74,4 @@ void leds_display_dbg_signed(signed char val) {
     _display[eSIDE_D] = val & 7;
     val >>= 3;
 }
+#endif

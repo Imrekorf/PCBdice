@@ -11,6 +11,8 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+#include <stdbool.h>
     
 #define xstr(s) str(s)
 #define str(s) #s
@@ -36,6 +38,11 @@ extern "C" {
 
 #define pMMA_INT             A, 3
 
+#define DICE_LED_EXEC_SIDE_I TMR1H
+#define CURR_ACTIVE_LED_SIDE TMR1L
+#define LED_DISPLAY_PATT     TMR0
+#define LED_DISPLAY_SIDE     DICE_LED_EXEC_SIDE_I
+
 enum {
     eHIGH = 1,
     eLOW  = 0,
@@ -50,9 +57,12 @@ enum {
     eINPUT   = 1,
 };
 
+#define _eSUCCESS 0
+#define _eFAILURE 1
+
 typedef enum {
-    eSUCCESS = 0,
-    eFAILURE = 1,
+    eSUCCESS = _eSUCCESS,
+    eFAILURE = _eFAILURE,
 } glbl_err_t;
 
 #if CPU_SPEED == 16000000

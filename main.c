@@ -20,46 +20,18 @@
 inline void initIO(void);
 inline void initClock(void);
 
-void i2cExecute(void);
-
-// Table of time driven events.
-static event_info_t event_info [] = {
-	//  Slot (us)				Event handler (void)
-	{	0, EVENT_INTERVAL_US(1000),	&ledsExecute },
-    {   0, EVENT_INTERVAL_US(10000), &i2cExecute },
+enum {
+    leds_event = 0,
+    mma_event  = 1,
+    n_events
 };
 
-#define EVENT_COUNT (sizeof(event_info)/sizeof(event_info[0]))
+static unsigned short event_timer[n_events] = {0};
 
-void i2cExecute(void) {
-    union {
-        signed char buff[3];
-        struct {
-            signed char x;
-            signed char y;
-            signed char z;
-        } g;
-    } data;
-    comm_MMA_read(MMA_OUT_X_MSB, (unsigned char*)&data.buff, 3);
-    
-    static eSIDE_t side = eSIDE_D;
-    leds_display(side, 0);
-    
-    if ( data.g.x <= -MMA_TRIP_mG_BIN )
-        side = eSIDE_E;
-    if ( data.g.x >=  MMA_TRIP_mG_BIN )
-        side = eSIDE_A;
-    if ( data.g.y <= -MMA_TRIP_mG_BIN )
-        side = eSIDE_B;
-    if ( data.g.y >=  MMA_TRIP_mG_BIN )
-        side = eSIDE_F;
-    if ( data.g.z <= -MMA_TRIP_mG_BIN )
-        side = eSIDE_D;
-    if ( data.g.z >=  MMA_TRIP_mG_BIN )
-        side = eSIDE_C;
-    
-    leds_display(side, 7);
-}
+#define LEDS_EVENT_INTERVAL EVENT_INTERVAL_US(1000)
+#define MMA_EVENT_INTERVAL  EVENT_INTERVAL_US(10000)
+
+#define EVENT_COUNT (sizeof(event_info)/sizeof(event_info[0]))
 
 void main(void) {
     
@@ -71,8 +43,12 @@ void main(void) {
     comm_MMA_write_byte(0b11100011);
     comm_MMA_stop();
     
+    CURR_ACTIVE_LED_SIDE = 0; // we use TMR1L here to keep track of which SIDE is currently being displayed on
+    DICE_LED_EXEC_SIDE_I = 0;
+    
     for (;;) {
-        eventExecute(event_info, EVENT_COUNT);
+        eventExecute(LEDS_EVENT_INTERVAL, event_timer[leds_event], ledsExecute);
+        eventExecute(MMA_EVENT_INTERVAL , event_timer[mma_event] , mmaExecute);
     }
     
     return;

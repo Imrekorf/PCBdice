@@ -13,7 +13,8 @@ extern "C" {
 #endif
 
 #include "custom_def.h"
-    
+#include "i2c.h"
+
 #define MMA_DEVICE_ADDR         0x3A
 
 #define MMA_G_SCALE             (2)
@@ -71,13 +72,15 @@ typedef enum {
 	MMA_OFF_Z				= 0x31,
 } mma_reg_t;
 
-glbl_err_t comm_MMA_start(mma_reg_t addr);
-void comm_MMA_stop(void);
+glbl_err_t comm_MMA_start(volatile mma_reg_t addr);
+#define comm_MMA_stop() i2c_stop();
 
 #define comm_MMA_write_byte(byte) i2c_write(byte), i2c_read_bit();
 
-glbl_err_t comm_MMA_read(mma_reg_t addr, unsigned char* buff, unsigned char buff_len);
-glbl_err_t comm_MMA_write(mma_reg_t addr, unsigned char* buff, unsigned char buff_len);
+glbl_err_t comm_MMA_read(const volatile mma_reg_t addr, volatile unsigned char* buff, volatile unsigned char buff_len);
+glbl_err_t comm_MMA_write(const volatile mma_reg_t addr, volatile unsigned char* buff, volatile unsigned char buff_len);
+
+void mmaExecute(void);
 
 #ifdef	__cplusplus
 }

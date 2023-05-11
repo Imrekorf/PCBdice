@@ -49,7 +49,7 @@
 static volatile unsigned char _i2c_reg = 0; //__at(I2C_REG_ADDR);
 
 /**
- * @brief Start's I2C communication
+ * @brief Starts I2C communication
  * Start I2C state:
  * - SCL: don't care
  * - SDA: don't care
@@ -72,7 +72,7 @@ void i2c_start(void) {
 }
 
 /**
- * @brief Stop's I2C communication
+ * @brief Stops I2C communication
  * Start I2C state:
  * - SCL: low
  * - SDA: don't care
@@ -90,6 +90,16 @@ void i2c_stop(void) {
     asm("BSF " xstr(BANKMASK(LATA)) ", " xstr(_SDA)); // actual L->H STOP condition
 }
 
+/**
+ * @brief Writes I2C byte
+ * Start I2C state:
+ * - SCL: don't care
+ * - SDA: don't care
+ * 
+ * End I2C state:
+ * - SCL: low
+ * - SDA: x
+ */
 void i2c_write(unsigned char b) {
 	// extremely dirty way to optimise not having to set _i2c_reg
 	// as b is set in W register on function call
@@ -109,6 +119,16 @@ void i2c_write(unsigned char b) {
 	asm("BCF	  " xstr(BANKMASK(LATA)) ", " xstr(_SCL));	// end I2C clock cycle
 }
 
+/**
+ * @brief Reads I2C byte
+ * Start I2C state:
+ * - SCL: don't care
+ * - SDA: don't care
+ * 
+ * End I2C state:
+ * - SCL: low
+ * - SDA: x
+ */
 unsigned char i2c_read(void) {
 	asm("MOVLW	 0x01");									// load end bit indicator
 	asm("MOVWF   __i2c_reg");								// put base value in I2C_REG

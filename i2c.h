@@ -12,10 +12,8 @@
 extern "C" {
 #endif
 
-typedef enum {
-    MODE_I2C_READ    = 1,
-    MODE_I2C_WRITE   = 0
-} i2c_comm_mode;
+#define MODE_I2C_READ   1
+#define MODE_I2C_WRITE  0
     
 #define I2C_ACK         0
 #define I2C_NACK        1

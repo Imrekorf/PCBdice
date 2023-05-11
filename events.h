@@ -19,13 +19,8 @@ extern "C" {
 #define EVENT_INTERVAL_MS(x) ((x * 1000) / EVENT_TIME_UNIT)
 #define EVENT_INTERVAL_US(x) (x / EVENT_TIME_UNIT)
 
-typedef struct {
-    unsigned short EventTimer;
-    const unsigned short EventInterval;
-    void (* const Handler)(void);
-} event_info_t;
-
-extern void eventExecute (event_info_t* event_info, char event_count);
+extern volatile unsigned short __T;
+#define eventExecute(event_interval, event_timer, event) {if (event_interval < (__T - event_timer)) {event_timer += __T - event_timer /* event_interval */; event();}}
 
 #ifdef	__cplusplus
 }
