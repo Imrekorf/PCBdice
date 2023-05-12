@@ -120,6 +120,7 @@ void mmaExecute(void) {
     if ( data.g.z >=  MMA_TRIP_mG_BIN )
         CURR_ACTIVE_LED_SIDE = eSIDE_C;
     
-    leds_display(CURR_ACTIVE_LED_SIDE, 7);
+    if (rPORT(pMMA_INT))
+        leds_display(CURR_ACTIVE_LED_SIDE, 7);        
 }
 

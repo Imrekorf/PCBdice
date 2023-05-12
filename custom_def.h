@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#pragma GCC diagnostic ignored "-Wgnu-binary-literal"
     
 #define xstr(s) str(s)
 #define str(s) #s

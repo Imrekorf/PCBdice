@@ -40,7 +40,11 @@ void main(void) {
     
 //    writeMMA(MMA_XYZ_DATA_CFG, 0b01);
     comm_MMA_start(MMA_CTRL_REG1);
-    comm_MMA_write_byte(0b11100011);
+    comm_MMA_write_byte(((mmaCTRL_REG1bits_t){
+        .ACTIVE     = 1,
+        .F_READ     = 1,
+        .DR         = 0b100,
+        .ASLP_RATE  = 0b11}));
     comm_MMA_stop();
     
     CURR_ACTIVE_LED_SIDE = 0; // we use TMR1L here to keep track of which SIDE is currently being displayed on
