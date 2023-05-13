@@ -37,6 +37,7 @@ extern "C" {
 #define pSIDE_STR            A, 1
 #define pPATT_STR            A, 5
 
+#define _MMA_INT             3
 #define pMMA_INT             A, 3
 
 #define DICE_LED_EXEC_SIDE_I TMR1H

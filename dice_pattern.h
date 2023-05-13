@@ -73,7 +73,7 @@ typedef enum {
 void ledsExecute(void);
 #ifdef _DEBUG
 extern ePATT_t _display[N_PATT_SIDES];
-#define leds_display(side, pattern) {_display[side] = pattern}
+#define leds_display(side, pattern) {_display[side] = pattern; }
 #else
 #define leds_display(side, pattern) {LED_DISPLAY_SIDE = side; LED_DISPLAY_PATT = pattern;}
 #endif

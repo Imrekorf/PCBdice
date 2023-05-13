@@ -38,21 +38,42 @@ void main(void) {
     initClock();
     initIO();
     
-//    writeMMA(MMA_XYZ_DATA_CFG, 0b01);
-    comm_MMA_start(MMA_CTRL_REG1);
-    comm_MMA_write_byte(((mmaCTRL_REG1bits_t){
-        .ACTIVE     = 1,
-        .F_READ     = 1,
-        .DR         = 0b100,
-        .ASLP_RATE  = 0b11}));
-    comm_MMA_stop();
-    
+    // const mmaCTRL_REG1bits_t ctrl_reg1_val = {
+    //     .ACTIVE     = 1,        // turn on the device
+    //     .F_READ     = 1,        // make sure fast read is on (only MSB bits of G data are read on consecutive readings)
+    //     /* X */
+    //     .DR         = 0b100,    // Data sampling rate of 50.0Hz during wake
+    //     .ASLP_RATE  = 0b11      // Data sampling rate of 1.56Hz during sleep
+    // }; -> 11 100 x 1 1
+    // const mmaCTRL_REG2bits_t ctrl_reg2_val = {
+    //     .MODS       = 0b11,     // wake low power: OS ratio 2
+    //     .SLPE       = 0,        // disable auto sleep          
+    //     .SMODS      = 0b11,     // sleep low power: OS ratio 16
+    //     /* X */
+    //     .RST        = 0,        // no reset
+    //     .ST         = 0,        // no self test
+    // }; -> 0 0 X 11 0 11
+    // const mmaCTRL_REG3bits_t ctrl_reg3_val = {
+    //     .PP_OD      = 0,        // Int pin is Push-Pull
+    //     .IPOL       = 1,        // make interrupts active high
+    //     /* X */
+    //     .WAKE_FF_MT = 0,        // disable wake from Free fall / motion interrupt
+    //     .WAKE_PULSE = 0,        // disable wake from pulse interrupt
+    //     .WAKE_LNDPRT = 0,       // disable orientation interrupt
+    //     .WAKE_TRANS = 0,        // disable transient interrupt
+    //     .FIFO_GATE  = 0,        // Fifo is flushed upon the system mode transitioning
+    // }; -> 0 0 0 0 0 x 1 0
+    const unsigned char ctrl_cfg[3] = {0b11100010, 0b00011011, 0b00000010};
+    comm_MMA_write(MMA_CTRL_REG1, ctrl_cfg, 3);
+
     CURR_ACTIVE_LED_SIDE = 0; // we use TMR1L here to keep track of which SIDE is currently being displayed on
     DICE_LED_EXEC_SIDE_I = 0;
     
+    leds_display_dbg(02345);
+    
     for (;;) {
         eventExecute(LEDS_EVENT_INTERVAL, event_timer[leds_event], ledsExecute);
-        eventExecute(MMA_EVENT_INTERVAL , event_timer[mma_event] , mmaExecute);
+        eventExecute(MMA_EVENT_INTERVAL,  event_timer[mma_event],  mmaExecute);
     }
     
     return;
@@ -66,7 +87,7 @@ inline void initIO(void) {
                     | 1 << _SDA
                     | 1 << _SCL;
     
-    TRISA       = 0; // init all bits as output, RA3 will be input as it is non-writable
+    TRISA       = 1 << _MMA_INT; // init all bits as output except RA3
 }
 
 inline void initClock(void) {

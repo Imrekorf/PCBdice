@@ -84,7 +84,7 @@
         <property key="call-prologues" value="false"/>
         <property key="default-bitfield-type" value="true"/>
         <property key="default-char-type" value="true"/>
-        <property key="define-macros" value=""/>
+        <property key="define-macros" value="_DEBUG"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories" value=""/>
         <property key="favor-optimization-for" value="-speed,+space"/>
@@ -100,7 +100,7 @@
         <property key="optimization-invariant-enable" value="false"/>
         <property key="optimization-invariant-value" value="16"/>
         <property key="optimization-level" value="-O2"/>
-        <property key="optimization-speed" value="false"/>
+        <property key="optimization-speed" value="true"/>
         <property key="optimization-stable-enable" value="false"/>
         <property key="preprocess-assembler" value="true"/>
         <property key="short-enums" value="true"/>
