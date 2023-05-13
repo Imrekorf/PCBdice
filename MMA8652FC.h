@@ -692,7 +692,7 @@ typedef union {
 glbl_err_t comm_MMA_start(volatile mma_reg_t addr);
 #define comm_MMA_stop() i2c_stop();
 
-#define comm_MMA_write_byte(reg) i2c_write(reg._data); i2c_read_bit()
+#define comm_MMA_write_byte(reg) i2c_write(reg); i2c_read_bit()
 
 glbl_err_t comm_MMA_read(const volatile mma_reg_t addr, volatile unsigned char* buff, volatile unsigned char buff_len);
 glbl_err_t comm_MMA_write(const volatile mma_reg_t addr, volatile unsigned char* buff, volatile unsigned char buff_len);

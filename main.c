@@ -38,13 +38,15 @@ void main(void) {
     initClock();
     initIO();
     
-//    writeMMA(MMA_XYZ_DATA_CFG, 0b01);
+    // const mmaCTRL_REG1bits_t ctrl_reg1_val = {
+    //     .ACTIVE     = 1,        // turn on the device
+    //     .F_READ     = 1,        // make sure fast read is on (only MSB bits of G data are read on consecutive readings)
+    //     /* X */
+    //     .DR         = 0b100,    // Data sampling rate of 50.0Hz during wake
+    //     .ASLP_RATE  = 0b11      // Data sampling rate of 1.56Hz during sleep
+    // }; -> 11 100 x 1 1
     comm_MMA_start(MMA_CTRL_REG1);
-    comm_MMA_write_byte(((mmaCTRL_REG1bits_t){
-        .ACTIVE     = 1,
-        .F_READ     = 1,
-        .DR         = 0b100,
-        .ASLP_RATE  = 0b11}));
+    comm_MMA_write_byte(0b11100011);
     comm_MMA_stop();
     
     CURR_ACTIVE_LED_SIDE = 0; // we use TMR1L here to keep track of which SIDE is currently being displayed on
